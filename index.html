@@ -2,20 +2,23 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <title>Pico 4 Ultra WebXR Test Scene</title>
-    <meta name="description" content="Simple WebXR test for Pico 4 Ultra using A-Frame">
+    <title>Pico 4 Ultra WebXR AR Test</title>
+    <!-- A-Frame core -->
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <!-- AR.js for A-Frame -->
+    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.4/aframe/build/aframe-ar.js"></script>
+    <style>
+      body { margin: 0; overflow: hidden; }
+      a-scene { width: 100vw; height: 100vh; }
+    </style>
   </head>
   <body>
-    <a-scene>
-      <!-- A simple colored box in the center -->
-      <a-box position="0 1.25 -3" rotation="0 45 0" color="#4CC3D9"></a-box>
-      <!-- Ground plane -->
-      <a-plane position="0 0 -4" rotation="-90 0 0" width="8" height="8" color="#7BC8A4"></a-plane>
-      <!-- Ambient light -->
-      <a-light type="ambient" color="#888"></a-light>
-      <!-- Camera -->
-      <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
+    <a-scene embedded arjs>
+      <!-- Place a cube on the marker -->
+      <a-marker preset="hiro">
+        <a-box position="0 0.5 0" material="color: #4CC3D9;"></a-box>
+      </a-marker>
+      <a-entity camera></a-entity>
     </a-scene>
   </body>
 </html>
