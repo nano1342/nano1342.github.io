@@ -1,3 +1,4 @@
+<!-- Based on https://developers.google.com/ar/develop/webxr/hello-webxr -->
 <!doctype html>
 <html>
 <head>
@@ -21,8 +22,13 @@ async function activateXR() {
   document.body.appendChild(canvas);
   const gl = canvas.getContext("webgl", {xrCompatible: true});
 
-  // Create scene first
+  // To be continued in upcoming steps.
+
+
+
+
   const scene = new THREE.Scene();
+
 
   // The cube will have a different color on each side.
   const materials = [
@@ -39,6 +45,9 @@ async function activateXR() {
   cube.position.set(1, 1, 1);
   scene.add(cube);
   
+
+
+
   // Set up the WebGLRenderer, which handles rendering to the session's base layer.
   const renderer = new THREE.WebGLRenderer({
     alpha: true,
@@ -48,11 +57,20 @@ async function activateXR() {
   });
   renderer.autoClear = false;
 
+  // Adding controllers to the scene.
+  const controller1 = renderer.xr.getController(0); // left or first controller
+  const controller2 = renderer.xr.getController(1); // right or second controller
+  scene.add(controller1);
+  scene.add(controller2);
+
+  
   // The API directly updates the camera matrices.
   // Disable matrix auto updates so three.js doesn't attempt
   // to handle the matrices independently.
   const camera = new THREE.PerspectiveCamera();
   camera.matrixAutoUpdate = false;
+
+
 
   // Initialize a WebXR session using "immersive-ar".
   const session = await navigator.xr.requestSession("immersive-ar");
@@ -60,32 +78,17 @@ async function activateXR() {
     baseLayer: new XRWebGLLayer(session, gl)
   });
 
-  // Enable XR in the renderer
-  renderer.xr.enabled = true;
-  renderer.xr.setReferenceSpaceType('local');
-  renderer.xr.setSession(session);
-
-  // Now add controllers after renderer.xr is initialized
-  const controller1 = renderer.xr.getController(0);
-  const controller2 = renderer.xr.getController(1);
-  scene.add(controller1);
-  scene.add(controller2);
-
   // A 'local' reference space has a native origin that is located
   // near the viewer's position at the time the session was created.
   const referenceSpace = await session.requestReferenceSpace('local');
 
-  // Add event listener for controller button press
-  controller1.addEventListener('select', () => {
+
+  
+
+  controller1.addEventListener('selectstart', () => {
     cube.position.x += 0.1; // Move cube along x-axis
-    console.log("Moving cube to:", cube.position.x);
   });
 
-  // Also add screen tap event for devices without controllers
-  session.addEventListener('select', () => {
-    cube.position.x += 0.1;
-    console.log("Screen tap - Moving cube to:", cube.position.x);
-  });
 
   // Create a render loop that allows us to draw on the AR view.
   const onXRFrame = (time, frame) => {
@@ -93,22 +96,31 @@ async function activateXR() {
     session.requestAnimationFrame(onXRFrame);
 
     // Bind the graphics framebuffer to the baseLayer's framebuffer
-    gl.bindFramebuffer(gl.FRAMEBUFFER, session.renderState.baseLayer.framebuffer);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, session.renderState.baseLayer.framebuffer)
 
     // Retrieve the pose of the device.
     // XRFrame.getViewerPose can return null while the session attempts to establish tracking.
     const pose = frame.getViewerPose(referenceSpace);
     if (pose) {
-      // For mobile AR, we typically only have one view
-      const view = pose.views[0];
-      const viewport = session.renderState.baseLayer.getViewport(view);
-      renderer.setSize(viewport.width, viewport.height);
-      
-      camera.matrix.fromArray(view.transform.matrix);
-      camera.projectionMatrix.fromArray(view.projectionMatrix);
-      camera.updateMatrixWorld(true);
-      
-      renderer.render(scene, camera);
+      /// For stereo rendering (VR), render for each eye
+      for (const view of pose.views) {
+        const viewport = session.renderState.baseLayer.getViewport(view);
+        renderer.setViewport(
+          viewport.x, viewport.y, viewport.width, viewport.height
+        );
+        renderer.setScissor(
+          viewport.x, viewport.y, viewport.width, viewport.height
+        );
+        renderer.setScissorTest(true);
+
+        camera.matrix.fromArray(view.transform.matrix);
+        camera.projectionMatrix.fromArray(view.projectionMatrix);
+        camera.updateMatrixWorld(true);
+
+        renderer.render(scene, camera);
+      }
+      renderer.setScissorTest(false); // Clean up
+
     }
   }
   session.requestAnimationFrame(onXRFrame);
