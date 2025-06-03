@@ -56,6 +56,9 @@ async function activateXR() {
     context: gl
   });
   renderer.autoClear = false;
+  renderer.xr.enabled = true;
+  renderer.xr.setSession(session);
+
 
   // Adding controllers to the scene.
   const controller1 = renderer.xr.getController(0); // left or first controller
@@ -63,9 +66,13 @@ async function activateXR() {
   scene.add(controller1);
   scene.add(controller2);
 
-  controller1.addEventListener('selectstart', () => {
-    cube.position.x += 0.1; // Move cube along x-axis
+  controller1.addEventListener('select', () => {
+    cube.position.x += 0.1;
   });
+  controller1.addEventListener('selectstart', () => {
+    cube.position.x += 0.1;
+  });
+
 
   
   // The API directly updates the camera matrices.
