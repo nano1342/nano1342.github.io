@@ -57,7 +57,6 @@ async function activateXR() {
   });
   renderer.autoClear = false;
   renderer.xr.enabled = true;
-  renderer.xr.setSession(session);
 
 
   // Adding controllers to the scene.
@@ -85,6 +84,7 @@ async function activateXR() {
 
   // Initialize a WebXR session using "immersive-ar".
   const session = await navigator.xr.requestSession("immersive-ar");
+  renderer.xr.setSession(session);
   session.updateRenderState({
     baseLayer: new XRWebGLLayer(session, gl)
   });
