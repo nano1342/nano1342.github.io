@@ -63,6 +63,10 @@ async function activateXR() {
   scene.add(controller1);
   scene.add(controller2);
 
+  controller1.addEventListener('selectstart', () => {
+    cube.position.x += 0.1; // Move cube along x-axis
+  });
+
   
   // The API directly updates the camera matrices.
   // Disable matrix auto updates so three.js doesn't attempt
