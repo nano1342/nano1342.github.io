@@ -1,5 +1,4 @@
-<!-- Based on https://developers.google.com/ar/develop/webxr/hello-webxr 
- Modified so that it works for an AR headset (the original tutorial is made for AR mobile apps, and doesn't do stereoscopic rendering). -->
+<!-- Based on https://developers.google.com/ar/develop/webxr/hello-webxr -->
 <!doctype html>
 <html>
 <head>
@@ -41,7 +40,7 @@ async function activateXR() {
   ];
 
   // Create the cube and add it to the demo scene.
-  const cube = new THREE.Mesh(new THREE.BoxBufferGeometry(0.1, 0.1, 0.2), materials);
+  const cube = new THREE.Mesh(new THREE.BoxBufferGeometry(0.2, 0.2, 0.2), materials);
   cube.position.set(1, 1, 1);
   scene.add(cube);
   
@@ -90,19 +89,25 @@ async function activateXR() {
     // XRFrame.getViewerPose can return null while the session attempts to establish tracking.
     const pose = frame.getViewerPose(referenceSpace);
     if (pose) {
-      // In mobile AR, we only have one view.
-      const view = pose.views[0];
+      /// For stereo rendering (VR), render for each eye
+      for (const view of pose.views) {
+        const viewport = session.renderState.baseLayer.getViewport(view);
+        renderer.setViewport(
+          viewport.x, viewport.y, viewport.width, viewport.height
+        );
+        renderer.setScissor(
+          viewport.x, viewport.y, viewport.width, viewport.height
+        );
+        renderer.setScissorTest(true);
 
-      const viewport = session.renderState.baseLayer.getViewport(view);
-      renderer.setSize(viewport.width, viewport.height)
+        camera.matrix.fromArray(view.transform.matrix);
+        camera.projectionMatrix.fromArray(view.projectionMatrix);
+        camera.updateMatrixWorld(true);
 
-      // Use the view's transform matrix and projection matrix to configure the THREE.camera.
-      camera.matrix.fromArray(view.transform.matrix)
-      camera.projectionMatrix.fromArray(view.projectionMatrix);
-      camera.updateMatrixWorld(true);
+        renderer.render(scene, camera);
+      }
+      renderer.setScissorTest(false); // Clean up
 
-      // Render the scene with THREE.WebGLRenderer.
-      renderer.render(scene, camera)
     }
   }
   session.requestAnimationFrame(onXRFrame);
