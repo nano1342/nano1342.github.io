@@ -89,7 +89,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         });
         document.querySelector('header').appendChild(xrButton.domElement);
 
-        if (navigator.xr) {
+        // if (navigator.xr) {
           // Checks to ensure that 'immersive-ar' mode is available, and only
           // enables the button if so.
           navigator.xr.isSessionSupported('immersive-ar').then((supported) => {
@@ -97,7 +97,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           });
 
           navigator.xr.requestSession('inline').then(onSessionStarted);
-        }
+        // }
       }
 
       function onRequestSession() {
