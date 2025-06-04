@@ -65,10 +65,33 @@ async function activateXR() {
   scene.add(controller1);
   scene.add(controller2);
   // Move the cube when the controller's trigger is pressed
-  function onSelectStart() {
-    // Move the cube along the x axis by 0.1 units
-    cube.position.x += 0.1;
+  
+  let lastControllerPosition = null;
+
+  function onSelectStart(event) {
+    const controller = event.target;
+    // Get the controller's world position
+    controller.updateMatrixWorld();
+    const controllerPosition = new THREE.Vector3();
+    controllerPosition.setFromMatrixPosition(controller.matrixWorld);
+
+    if (lastControllerPosition) {
+      // Calculate movement delta
+      const delta = new THREE.Vector3().subVectors(controllerPosition, lastControllerPosition);
+      // Move the cube by the controller's movement delta
+      cube.position.add(delta);
+    }
+    // Store current position for next event
+    lastControllerPosition = controllerPosition.clone();
   }
+
+  // Reset lastControllerPosition when select ends
+  function onSelectEnd(event) {
+    lastControllerPosition = null;
+  }
+
+  controller1.addEventListener('selectend', onSelectEnd);
+  controller2.addEventListener('selectend', onSelectEnd);
 
   controller1.addEventListener('selectstart', onSelectStart);
   controller2.addEventListener('selectstart', onSelectStart);
