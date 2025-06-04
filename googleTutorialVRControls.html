@@ -64,15 +64,38 @@ async function activateXR() {
   const controller2 = renderer.xr.getController(1); // right or second controller
   scene.add(controller1);
   scene.add(controller2);
+    const materials2 = [
+    new THREE.MeshBasicMaterial({color: 0x00ff00}),
+    new THREE.MeshBasicMaterial({color: 0x00ff00}),
+    new THREE.MeshBasicMaterial({color: 0x00ff00}),
+    new THREE.MeshBasicMaterial({color: 0x00ff00}),
+    new THREE.MeshBasicMaterial({color: 0x00ff00}),
+    new THREE.MeshBasicMaterial({color: 0x00ff00})
+  ];
   if (controller1 !== null) {
-    const cube2 = new THREE.Mesh(new THREE.BoxBufferGeometry(0.2, 0.2, 0.2), materials);
+    const cube2 = new THREE.Mesh(new THREE.BoxBufferGeometry(0.2, 0.2, 0.2), materials2);
     cube2.position.set(1, 1, 0);
     scene.add(cube2);
   }
   if (controller2 !== null) {
-    const cube3 = new THREE.Mesh(new THREE.BoxBufferGeometry(0.2, 0.2, 0.2), materials);
+    const cube3 = new THREE.Mesh(new THREE.BoxBufferGeometry(0.2, 0.2, 0.2), materials2);
     cube3.position.set(1, 1, -1);
     scene.add(cube3);
+  }
+
+  controller1.addEventListener( 'connected', ( event ) => {
+    if (event.data.handedness == "left" ){
+      //do something here
+    }
+    if (event.data.handedness == "right" ){
+      //do something here
+    }
+    //get buttons inputs from controller 1
+    controller1.gamepad = event.data.gamepad;
+  });
+
+  if ( controller1.gamepad.axes[3] < 0 ){
+    cube.position.x += 0.1;
   }
 
   controller1.addEventListener('select', () => {
