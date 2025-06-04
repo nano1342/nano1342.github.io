@@ -88,11 +88,11 @@ async function activateXR() {
   controller2.addEventListener('selectstart', onSelectStart);
   controller2.addEventListener('selectend', onSelectEnd);
 
-  // Update the cube position in the render loop
-  renderer.setAnimationLoop(() => {
-    moveCubeWithController(controller1);
-    moveCubeWithController(controller2);
-  });
+  // Remove this animation loop, as we'll use the WebXR session's frame loop below
+  // renderer.setAnimationLoop(() => {
+  //   moveCubeWithController(controller1);
+  //   moveCubeWithController(controller2);
+  // });
 
   
   // The API directly updates the camera matrices.
@@ -117,40 +117,12 @@ async function activateXR() {
 
 
 
-  // Create a render loop that allows us to draw on the AR view.
-  const onXRFrame = (time, frame) => {
-    // Queue up the next draw request.
-    session.requestAnimationFrame(onXRFrame);
-
-    // Bind the graphics framebuffer to the baseLayer's framebuffer
-    gl.bindFramebuffer(gl.FRAMEBUFFER, session.renderState.baseLayer.framebuffer)
-
-    // Retrieve the pose of the device.
-    // XRFrame.getViewerPose can return null while the session attempts to establish tracking.
-    const pose = frame.getViewerPose(referenceSpace);
-    if (pose) {
-      /// For stereo rendering (VR), render for each eye
-      for (const view of pose.views) {
-        const viewport = session.renderState.baseLayer.getViewport(view);
-        renderer.setViewport(
-          viewport.x, viewport.y, viewport.width, viewport.height
-        );
-        renderer.setScissor(
-          viewport.x, viewport.y, viewport.width, viewport.height
-        );
-        renderer.setScissorTest(true);
-
-        camera.matrix.fromArray(view.transform.matrix);
-        camera.projectionMatrix.fromArray(view.projectionMatrix);
-        camera.updateMatrixWorld(true);
-
-        renderer.render(scene, camera);
-      }
-      renderer.setScissorTest(false); // Clean up
-
-    }
-  }
-  session.requestAnimationFrame(onXRFrame);
+  // Use Three.js's renderer.setAnimationLoop for proper controller updates and rendering
+  renderer.setAnimationLoop(() => {
+    moveCubeWithController(controller1);
+    moveCubeWithController(controller2);
+    renderer.render(scene, camera);
+  });
 }
 </script>
 </body>
