@@ -64,6 +64,16 @@ async function activateXR() {
   const controller2 = renderer.xr.getController(1); // right or second controller
   scene.add(controller1);
   scene.add(controller2);
+  if (controller1 !== null) {
+    const cube2 = new THREE.Mesh(new THREE.BoxBufferGeometry(0.2, 0.2, 0.2), materials);
+    cube2.position.set(1, 1, 0);
+    scene.add(cube2);
+  }
+  if (controller2 !== null) {
+    const cube3 = new THREE.Mesh(new THREE.BoxBufferGeometry(0.2, 0.2, 0.2), materials);
+    cube3.position.set(1, 1, -1);
+    scene.add(cube3);
+  }
 
   controller1.addEventListener('select', () => {
     cube.position.x += 0.1;
