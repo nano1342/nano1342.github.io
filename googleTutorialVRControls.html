@@ -64,47 +64,35 @@ async function activateXR() {
   const controller2 = renderer.xr.getController(1); // right or second controller
   scene.add(controller1);
   scene.add(controller2);
-    const materials2 = [
-    new THREE.MeshBasicMaterial({color: 0x00ff00}),
-    new THREE.MeshBasicMaterial({color: 0x00ff00}),
-    new THREE.MeshBasicMaterial({color: 0x00ff00}),
-    new THREE.MeshBasicMaterial({color: 0x00ff00}),
-    new THREE.MeshBasicMaterial({color: 0x00ff00}),
-    new THREE.MeshBasicMaterial({color: 0x00ff00})
-  ];
-  if (controller1 !== null) {
-    const cube2 = new THREE.Mesh(new THREE.BoxBufferGeometry(0.2, 0.2, 0.2), materials2);
-    cube2.position.set(1, 1, 0);
-    scene.add(cube2);
+
+  function onSelectStart() {
+    this.userData.isSelecting = true;
   }
-  if (controller2 !== null) {
-    const cube3 = new THREE.Mesh(new THREE.BoxBufferGeometry(0.2, 0.2, 0.2), materials2);
-    cube3.position.set(1, 1, -1);
-    scene.add(cube3);
+  function onSelectEnd() {
+    this.userData.isSelecting = false;
   }
 
-  controller1.addEventListener( 'connected', ( event ) => {
-    if (event.data.handedness == "left" ){
-      //do something here
+  // Move the cube when a controller is selecting
+  function moveCubeWithController(controller) {
+    if (controller.userData.isSelecting) {
+      // Move the cube to the controller's position
+      controller.updateMatrixWorld();
+      const pos = new THREE.Vector3();
+      pos.setFromMatrixPosition(controller.matrixWorld);
+      cube.position.copy(pos);
     }
-    if (event.data.handedness == "right" ){
-      //do something here
-    }
-    //get buttons inputs from controller 1
-    controller1.gamepad = event.data.gamepad;
-  });
-
-  if ( controller1.gamepad.axes[3] < 0 ){
-    cube.position.x += 0.1;
   }
 
-  controller1.addEventListener('select', () => {
-    cube.position.x += 0.1;
-  });
-  controller1.addEventListener('selectstart', () => {
-    cube.position.x += 0.1;
-  });
+  controller1.addEventListener('selectstart', onSelectStart);
+  controller1.addEventListener('selectend', onSelectEnd);
+  controller2.addEventListener('selectstart', onSelectStart);
+  controller2.addEventListener('selectend', onSelectEnd);
 
+  // Update the cube position in the render loop
+  renderer.setAnimationLoop(() => {
+    moveCubeWithController(controller1);
+    moveCubeWithController(controller2);
+  });
 
   
   // The API directly updates the camera matrices.
