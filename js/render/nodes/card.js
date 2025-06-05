@@ -34,7 +34,7 @@ export class CardNode extends Node {
     const material = new Material(matOptions);
 
     primitive.material = material;
-    this.addPrimitive(primitive);
+    this.addRenderPrimitive(primitive);
 
     // Set position
     this.translation = position;
