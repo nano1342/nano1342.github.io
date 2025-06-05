@@ -82,6 +82,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       cube.scale = [0.2, 0.2, 0.2];
       scene.addNode(cube);
 
+      import {CardNode} from './js/render/nodes/card.js';
+      let card = new CardNode();
+      card.translation = [0, 1.5, -2];
+      card.scale = [0.2, 0.2, 0.2];
+      scene.addNode(card);
+
       // Still adding a skybox, but only for the benefit of the inline view.
       let skybox = new SkyboxNode({url: 'media/textures/milky-way-4k.png'});
       scene.addNode(skybox);
