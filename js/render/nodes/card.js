@@ -2,7 +2,7 @@ import {Node} from '../core/node.js';
 import {Primitive} from '../core/primitive.js';
 import {Material} from '../core/material.js';
 import {BoxBuilder} from '../geometry/box-builder.js';
-import {TextureLoader} from '../../util/texture-loader.js';
+// import {TextureLoader} from '../../util/texture-loader.js';
 
 export class CardNode extends Node {
   /**
@@ -19,7 +19,6 @@ export class CardNode extends Node {
     height = 1.5,
     depth = 0.05,
     color = [1, 1, 1, 1],
-    texture = null,
     position = [0, 0, 0]
   } = {}) {
     super();
@@ -30,11 +29,8 @@ export class CardNode extends Node {
 
     // Create material
     let matOptions = {};
-    if (texture) {
-      matOptions.baseColorTexture = TextureLoader.load(texture);
-    } else {
-      matOptions.baseColorFactor = color;
-    }
+    matOptions.baseColorFactor = color;
+    
     const material = new Material(matOptions);
 
     primitive.material = material;
