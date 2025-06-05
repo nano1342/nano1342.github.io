@@ -1,33 +1,48 @@
-import Node from '../node.js';
+import {Node} from '../core/node.js';
+import {Primitive} from '../core/primitive.js';
+import {Material} from '../core/material.js';
+import {BoxBuilder} from '../geometry/box-builder.js';
+import {TextureLoader} from '../../util/texture-loader.js';
 
-class CardNode extends Node {
-    constructor({
-        width = 1,
-        height = 1.5,
-        depth = 0.05,
-        color = 0xffffff,
-        texture = null,
-        position = { x: 0, y: 0, z: 0 }
-    } = {}) {
-        super();
+export class CardNode extends Node {
+  /**
+   * Creates a card (flat box) node.
+   * @param {Object} options
+   * @param {number} [options.width=1]
+   * @param {number} [options.height=1.5]
+   * @param {number} [options.depth=0.05]
+   * @param {Array|number} [options.color=[1,1,1,1]] - RGBA color or hex
+   * @param {string} [options.texture=null] - URL to texture image
+   */
+  constructor({
+    width = 1,
+    height = 1.5,
+    depth = 0.05,
+    color = [1, 1, 1, 1],
+    texture = null,
+    position = [0, 0, 0]
+  } = {}) {
+    super();
 
-        // Create geometry and material
-        const geometry = new THREE.BoxGeometry(width, height, depth);
-        let material;
-        if (texture) {
-            const tex = new THREE.TextureLoader().load(texture);
-            material = new THREE.MeshBasicMaterial({ map: tex });
-        } else {
-            material = new THREE.MeshBasicMaterial({ color });
-        }
+    // Build box geometry
+    const builder = new BoxBuilder(width, height, depth);
+    const primitive = new Primitive(builder);
 
-        // Create mesh
-        this.mesh = new THREE.Mesh(geometry, material);
-        this.mesh.position.set(position.x, position.y, position.z);
-
-        // Add mesh to this node's object3D
-        this.object3D.add(this.mesh);
+    // Create material
+    let matOptions = {};
+    if (texture) {
+      matOptions.baseColorTexture = TextureLoader.load(texture);
+    } else {
+      matOptions.baseColorFactor = color;
     }
+    const material = new Material(matOptions);
+
+    primitive.material = material;
+    this.addPrimitive(primitive);
+
+    // Set position
+    this.translation = position;
+  }
 }
 
 export default CardNode;
