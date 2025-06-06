@@ -6,11 +6,12 @@ import {BoxBuilder} from '../geometry/box-builder.js';
 import {PrimitiveStream} from '../geometry/primitive-stream.js';
 import {PbrMaterial} from '../materials/pbr.js';
 import {SevenSegmentText} from './seven-segment-text.js';
+import * as THREE from 'https://unpkg.com/three@0.127.0/build/three.module.js';
+import { QuadNode } from './quad-texture.js';
 
 export class CardNode extends Node {
   constructor() {
     super();
-    this._textureSize = 1; // Add this line to set a default size
     this._sevenSegmentNode = new SevenSegmentText();
     // Hard coded because it doesn't change:
     // Scale by 0.075 in X and Y
@@ -23,32 +24,33 @@ export class CardNode extends Node {
     ]);
   }
 
+  _createTextTexture(text, size = 256) {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, size, size);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = '#000';
+    ctx.font = 'bold 48px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, size / 2, size / 2);
+
+    // Create a WebGL texture from the canvas
+    const texture = new THREE.Texture(canvas); // If using THREE.js
+    texture.needsUpdate = true;
+    return texture;
+  }
+
   onRendererChanged(renderer) {
-    let stream = new PrimitiveStream();
-    let hs = this._textureSize * 0.5;
-    stream.clear();
-    stream.startGeometry();
 
-    stream.pushVertex(-hs,  hs, 0, 0, 0, 0, 0, 1);
-    stream.pushVertex(-hs, -hs, 0, 0, 1, 0, 0, 1);
-    stream.pushVertex( hs, -hs, 0, 1, 1, 0, 0, 1);
-    stream.pushVertex( hs,  hs, 0, 1, 0, 0, 0, 1);
+    let textTexture = this._createTextTexture('text texture');
+    let dataUrl = textTexture.image.toDataURL();
 
-    stream.pushTriangle(0, 1, 2);
-    stream.pushTriangle(0, 2, 3);
-
-
-
-    stream.endGeometry();
-
-    let primitive = stream.finishPrimitive(renderer);
-    let material = new PbrMaterial();
-    material.baseColorFactor.value = [0.9, 0.9, 0.9, 1]; // grey
-    this._iconRenderPrimitive = renderer.createRenderPrimitive(
-      primitive,
-      material
-    );
-    this.addRenderPrimitive(this._iconRenderPrimitive);
+    const someTextureURL = '../media/textures/eilenriede-park-2k.png';
+    let quad = new QuadNode(dataUrl, 1, true);
+    this.addNode(quad);
 
     this.addNode(this._sevenSegmentNode);
     this._sevenSegmentNode.text = "ABCD";
