@@ -76,21 +76,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // solarSystem.scale = [0.1, 0.1, 0.1];
       // scene.addNode(solarSystem);
       
-      import {CubeSeaNode} from './js/render/nodes/cube-sea.js';
-      let cube = new CubeSeaNode();
-      cube.translation = [0, 1.5, -2];
-      cube.scale = [0.2, 0.2, 0.2];
-      scene.addNode(cube);
+      // import {CubeSeaNode} from './js/render/nodes/cube-sea.js';
+      // let cube = new CubeSeaNode();
+      // cube.translation = [0, 0.5, -2];
+      // cube.scale = [0.2, 0.2, 0.2];
+      // scene.addNode(cube);
 
       import {CardNode} from './js/render/nodes/card.js';
-      const card = new CardNode({
-        width: 1,
-        height: 1.5,
-        depth: 0.05,
-        color: [1, 0.8, 0.2, 1], // RGBA
-        texture: 'images/my-card.png',
-        position: [0, 1, -2]
-      });
+      const card = new CardNode();
+      card.translation = [0, 0.5, -2];
       scene.addNode(card);
 
       // Still adding a skybox, but only for the benefit of the inline view.

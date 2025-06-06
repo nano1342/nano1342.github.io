@@ -3,42 +3,39 @@ import {Primitive} from '../core/primitive.js';
 import {Material} from '../core/material.js';
 import {BoxBuilder} from '../geometry/box-builder.js';
 // import {TextureLoader} from '../../util/texture-loader.js';
+import {PrimitiveStream} from '../geometry/primitive-stream.js';
+import {PbrMaterial} from '../materials/pbr.js';
 
 export class CardNode extends Node {
-  /**
-   * Creates a card (flat box) node.
-   * @param {Object} options
-   * @param {number} [options.width=1]
-   * @param {number} [options.height=1.5]
-   * @param {number} [options.depth=0.05]
-   * @param {Array|number} [options.color=[1,1,1,1]] - RGBA color or hex
-   * @param {string} [options.texture=null] - URL to texture image
-   */
-  constructor({
-    width = 1,
-    height = 1.5,
-    depth = 0.05,
-    color = [1, 1, 1, 1],
-    position = [0, 0, 0]
-  } = {}) {
+  constructor() {
     super();
+    this._textureSize = 1; // Add this line to set a default size
+  }
 
-    // Build box geometry
-    const builder = new BoxBuilder(width, height, depth);
-    const primitive = new Primitive(builder);
+  onRendererChanged(renderer) {
+    let stream = new PrimitiveStream();
+    let hs = this._textureSize * 0.5;
+    stream.clear();
+    stream.startGeometry();
 
-    // Create material
-    let matOptions = {};
-    matOptions.baseColorFactor = color;
-    
-    const material = new Material(matOptions);
+    stream.pushVertex(-hs, hs, 0, 0, 0, 0, 0, 1);
+    stream.pushVertex(-hs, -hs, 0, 0, 1, 0, 0, 1);
+    stream.pushVertex(hs, -hs, 0, 1, 1, 0, 0, 1);
+    stream.pushVertex(hs, hs, 0, 1, 0, 0, 0, 1);
 
-    primitive.material = material;
-    // this.addRenderPrimitive(primitive);
-    this.primitives += primitive;
+    stream.pushTriangle(0, 1, 2);
+    stream.pushTriangle(0, 2, 3);
 
-    // Set position
-    this.translation = position;
+    stream.endGeometry();
+
+    let iconPrimitive = stream.finishPrimitive(renderer);
+    let boxMaterial = new PbrMaterial();
+    boxMaterial.baseColorFactor.value = [0.9, 0.9, 0.9, 1]; // grey
+    this._iconRenderPrimitive = renderer.createRenderPrimitive(
+      iconPrimitive,
+      boxMaterial
+    );
+    this.addRenderPrimitive(this._iconRenderPrimitive);
   }
 }
 
