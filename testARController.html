@@ -92,7 +92,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // scene.addNode(cube);
 
       import {CardNode} from './js/render/nodes/card.js';
-      const card = new CardNode('text texture', 'Salut comment ça va ceci est un test');
+      const card = new CardNode('text texture', 'attempt 4');
       card.translation = [0, 0.5, -2];
       card.rotation = [0, 0, 0, 0];
       scene.addNode(card);
@@ -261,19 +261,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             // it is expected that the scale is 0.75 (see onSelectStart). This should make the scale 1.0
             vec3.add(currently_selected_box.scale, currently_selected_box.scale, [0.25, 0.25, 0.25]);
             currently_selected_box.selected = false;
-            if (ev.inputSource && ev.inputSource.gripSpace) {
-              let refSpace = ev.frame.session.isImmersive ?
-                               xrImmersiveRefSpace :
-                               inlineViewerHelper.referenceSpace;
-              let gripPose = ev.frame.getPose(ev.inputSource.gripSpace, refSpace);
-              if (gripPose) {
-                currently_selected_box.position = [
-                  gripPose.transform.position.x,
-                  gripPose.transform.position.y,
-                  gripPose.transform.position.z
-                ];
-              }
-            }
           } else {
             // there was no 'select' event: final cube's size will be smaller.
             currently_selected_box.scale = [0.75, 0.75, 0.75];
@@ -292,6 +279,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           // it is expected that the scale is 1.25 (see onSelectStart). This should make the scale 0.75
           vec3.add(currently_selected_box.scale, currently_selected_box.scale, [-0.5, -0.5, -0.5]);
           currently_selected_box.selected = true;
+          currently_selected_box.dragging = true;
+          currently_selected_box.inputSource = ev.inputSource;
         }
       }
 
