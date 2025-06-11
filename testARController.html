@@ -366,19 +366,26 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           // Statically render the cursor 2 meters down the ray since we're
           // not calculating any intersections in this sample.
           let targetRay = new Ray(targetRayPose.transform);
-          let cursorDistance = 2.0;
-          let cursorPos = vec3.fromValues(
+          // Try to hit test against selectable nodes
+          let hitResult = scene.hitTest(targetRayPose.transform);
+          let cursorPos;
+          if (hitResult) {
+            // Place the cursor at the intersection point
+            cursorPos = hitResult.intersection;
+          } else {
+            // Default: 2 meters down the ray
+            let cursorDistance = 2.0;
+            cursorPos = vec3.fromValues(
               targetRay.origin.x,
               targetRay.origin.y,
               targetRay.origin.z
-              );
-          vec3.add(cursorPos, cursorPos, [
+            );
+            vec3.add(cursorPos, cursorPos, [
               targetRay.direction.x * cursorDistance,
               targetRay.direction.y * cursorDistance,
               targetRay.direction.z * cursorDistance,
-              ]);
-          // vec3.transformMat4(cursorPos, cursorPos, inputPose.targetRay.transformMatrix);
-
+            ]);
+          }
           scene.inputRenderer.addCursor(cursorPos);
           
           if (inputSource.gripSpace) {
