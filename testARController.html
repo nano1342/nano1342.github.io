@@ -155,8 +155,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
         scene.setRenderer(renderer);
         
-        scene.inputRenderer.setControllerMesh(new Gltf2Node({url: 'media/gltf/controller/controller.gltf'}), 'right');
-        scene.inputRenderer.setControllerMesh(new Gltf2Node({url: 'media/gltf/controller/controller-left.gltf'}), 'left');
+        scene.inputRenderer.setControllerMesh(new Gltf2Node(
+          {url: 'media/gltf/controller/controller.gltf'}), 'right');
+        scene.inputRenderer.setControllerMesh(new Gltf2Node(
+          {url: 'media/gltf/controller/controller-left.gltf'}), 'left');
 
         // Create several boxes to use for hit testing.
         let boxBuilder = new BoxBuilder();
@@ -259,6 +261,19 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             // it is expected that the scale is 0.75 (see onSelectStart). This should make the scale 1.0
             vec3.add(currently_selected_box.scale, currently_selected_box.scale, [0.25, 0.25, 0.25]);
             currently_selected_box.selected = false;
+            if (ev.inputSource && ev.inputSource.gripSpace) {
+              let refSpace = ev.frame.session.isImmersive ?
+                               xrImmersiveRefSpace :
+                               inlineViewerHelper.referenceSpace;
+              let gripPose = ev.frame.getPose(ev.inputSource.gripSpace, refSpace);
+              if (gripPose) {
+                currently_selected_box.position = [
+                  gripPose.transform.position.x,
+                  gripPose.transform.position.y,
+                  gripPose.transform.position.z
+                ];
+              }
+            }
           } else {
             // there was no 'select' event: final cube's size will be smaller.
             currently_selected_box.scale = [0.75, 0.75, 0.75];
@@ -393,7 +408,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             if (gripPose) {
               // If we have a grip pose use it to render a mesh showing the
               // position of the controller.
-              scene.inputRenderer.addController(gripPose.transform.matrix, inputSource.handedness, inputSource.profiles[0]);
+              scene.inputRenderer.addController(gripPose.transform.matrix,
+                                                inputSource.handedness,
+                                                inputSource.profiles[0]);
             }
           }
           
