@@ -92,7 +92,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // scene.addNode(cube);
 
       import {CardNode} from './js/render/nodes/card.js';
-      const card = new CardNode('text texture', 'attempt 4');
+      const card = new CardNode('text texture', 'attempt 5');
       card.translation = [0, 0.5, -2];
       card.rotation = [0, 0, 0, 0];
       scene.addNode(card);
@@ -279,8 +279,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           // it is expected that the scale is 1.25 (see onSelectStart). This should make the scale 0.75
           vec3.add(currently_selected_box.scale, currently_selected_box.scale, [-0.5, -0.5, -0.5]);
           currently_selected_box.selected = true;
-          currently_selected_box.dragging = true;
-          currently_selected_box.inputSource = ev.inputSource;
+          
         }
       }
 
@@ -417,6 +416,32 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         scene.startFrame();
 
         session.requestAnimationFrame(onXRFrame);
+
+
+        for (let inputSource of session.inputSources) {
+          let i = (inputSource.handedness == "left") ? 0 : 1;
+          let grabbedBox = currently_grabbed_boxes[i];
+          if (grabbedBox && grabbedBox.grabbed) {
+            let targetRayPose = frame.getPose(inputSource.targetRaySpace, refSpace);
+            if (targetRayPose) {
+              // Move the box to a point 10cm in front of the controller
+              let ray = new Ray(targetRayPose.transform);
+              let grabDistance = 0.1; // 10 cm
+              let grabPos = vec3.fromValues(
+                ray.origin.x,
+                ray.origin.y,
+                ray.origin.z
+              );
+              vec3.add(grabPos, grabPos, [
+                ray.direction.x * grabDistance,
+                ray.direction.y * grabDistance,
+                ray.direction.z * grabDistance,
+              ]);
+              grabbedBox.position = grabPos;
+            }
+          }
+        }
+
 
         // Update the matrix for each box
         for (let box of boxes) {
