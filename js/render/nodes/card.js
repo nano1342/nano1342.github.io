@@ -9,33 +9,61 @@ import {SevenSegmentText} from './seven-segment-text.js';
 import * as THREE from 'https://unpkg.com/three@0.127.0/build/three.module.js';
 import { QuadNode } from './quad-texture.js';
 
+function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+  const words = text.split(' ');
+  let line = '';
+
+  for (let n = 0; n < words.length; n++) {
+    const testLine = line + words[n] + ' ';
+    const metrics = ctx.measureText(testLine);
+    const testWidth = metrics.width;
+    if (testWidth > maxWidth && n > 0) {
+      ctx.fillText(line, x, y);
+      line = words[n] + ' ';
+      y += lineHeight;
+    } else {
+      line = testLine;
+    }
+  }
+  ctx.fillText(line, x, y);
+}
+
 export class CardNode extends Node {
-  constructor() {
+  constructor(title, text) {
     super();
-    this._sevenSegmentNode = new SevenSegmentText();
-    // Hard coded because it doesn't change:
-    // Scale by 0.075 in X and Y
-    // Translate into upper left corner w/ z = 0.02
-    this._sevenSegmentNode.matrix = new Float32Array([
-      0.075, 0, 0, 0,
-      0, 0.075, 0, 0,
-      0, 0, 1, 0,
-      -0.3625, 0.3625, 0.02, 1,
-    ]);
+    this.title = title;
+    this.text = text;
   }
 
-  _createTextTexture(text, size = 256) {
+  
+
+  _createTextTexture(title, text, size = 256) {
     const canvas = document.createElement('canvas');
     canvas.width = canvas.height = size;
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, size, size);
     ctx.fillStyle = '#fff';
+
     ctx.fillRect(0, 0, size, size);
     ctx.fillStyle = '#000';
-    ctx.font = 'bold 48px sans-serif';
+    ctx.font = 'bold 28px sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(text, size / 2, size / 2);
+    // Draw title at the top (e.g., y = 10 for some padding)
+    ctx.fillText(title, size / 2, 20);
+
+    ctx.fillStyle = '#000';
+    ctx.font = 'bold 20px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+
+    // Automatic text wrapping
+    const maxWidth = size - 20; // padding of 10px on each side
+    const lineHeight = 26;
+    let x = 10;
+    let y = 50;
+    
+    wrapText(ctx, text, x, y, maxWidth, lineHeight);
 
     // Create a WebGL texture from the canvas
     const texture = new THREE.Texture(canvas); // If using THREE.js
@@ -45,15 +73,12 @@ export class CardNode extends Node {
 
   onRendererChanged(renderer) {
 
-    let textTexture = this._createTextTexture('text texture');
+    let textTexture = this._createTextTexture(this.title, this.text);
     let dataUrl = textTexture.image.toDataURL();
 
     const someTextureURL = '../media/textures/eilenriede-park-2k.png';
     let quad = new QuadNode(dataUrl, 1, true);
     this.addNode(quad);
-
-    this.addNode(this._sevenSegmentNode);
-    this._sevenSegmentNode.text = "ABCD";
   }
 }
 

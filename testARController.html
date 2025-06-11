@@ -53,6 +53,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       import {InlineViewerHelper} from './js/util/inline-viewer-helper.js';
       import {Gltf2Node} from './js/render/nodes/gltf2.js';
       import {QueryArgs} from './js/util/query-args.js';
+      import {Node} from './js/render/core/node.js';
+      import {BoxBuilder} from './js/render/geometry/box-builder.js';
+      import {PbrMaterial} from './js/render/materials/pbr.js';
+      import {vec3, mat4} from './js/render/math/gl-matrix.js';
 
       // If requested, use the polyfill to provide support for mobile devices
       // and devices which only support WebVR.
@@ -70,6 +74,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       let gl = null;
       let renderer = null;
       let scene = new Scene();
+      let boxes = [];
+      let currently_selected_boxes = [null, null];
+      let currently_grabbed_boxes = [null, null];
+
       //let solarSystem = new Gltf2Node({url: 'media/gltf/space/space.gltf'});
       // The solar system is big (citation needed). Scale it down so that users
       // can move around the planets more easily.
@@ -83,7 +91,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // scene.addNode(cube);
 
       import {CardNode} from './js/render/nodes/card.js';
-      const card = new CardNode();
+      const card = new CardNode('text texture', 'Salut comment ça va ceci est un test');
       card.translation = [0, 0.5, -2];
       card.rotation = [0, 0, 0, 0];
       scene.addNode(card);
@@ -145,6 +153,32 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         renderer = new Renderer(gl);
 
         scene.setRenderer(renderer);
+
+        // Create several boxes to use for hit testing.
+        let boxBuilder = new BoxBuilder();
+        boxBuilder.pushCube([0, 0, 0], 0.4);
+        let boxPrimitive = boxBuilder.finishPrimitive(renderer);
+
+        function addBox(x, y, z, r, g, b) {
+          let boxMaterial = new PbrMaterial();
+          boxMaterial.baseColorFactor.value = [r, g, b, 1.0];
+          let boxRenderPrimitive = renderer.createRenderPrimitive(boxPrimitive, boxMaterial);
+          let boxNode = new Node();
+          boxNode.addRenderPrimitive(boxRenderPrimitive);
+          // Marks the node as one that needs to be checked when hit testing.
+          boxNode.selectable = true;
+          boxes.push({
+            node: boxNode,
+            renderPrimitive: boxRenderPrimitive,
+            position: [x, y, z],
+            scale: [1, 1, 1],
+          });
+          scene.addNode(boxNode);
+        }
+
+        addBox(-1.0, 1.6, -1.3, 1.0, 0.0, 0.0);
+        addBox(0.0, 1.7, -1.5, 0.0, 1.0, 0.0);
+        addBox(1.0, 1.6, -1.3, 0.0, 0.0, 1.0);
       }
 
       function onSessionStarted(session) {
@@ -202,6 +236,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         scene.startFrame();
 
         session.requestAnimationFrame(onXRFrame);
+
+        // Update the matrix for each box
+        for (let box of boxes) {
+          let node = box.node;
+          mat4.identity(node.matrix);
+          mat4.translate(node.matrix, node.matrix, box.position);
+          mat4.rotateX(node.matrix, node.matrix, t/1000);
+          mat4.rotateY(node.matrix, node.matrix, t/1500);
+          mat4.scale(node.matrix, node.matrix, box.scale);
+        }
 
         scene.drawXRFrame(frame, pose);
 
