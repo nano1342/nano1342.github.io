@@ -28,7 +28,7 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
   ctx.fillText(line, x, y);
 }
 
-export class CardNode extends Node {
+class CardNode extends Node {
   constructor(title, text) {
     super();
     this.title = title;
@@ -79,6 +79,16 @@ export class CardNode extends Node {
     const someTextureURL = '../media/textures/eilenriede-park-2k.png';
     let quad = new QuadNode(dataUrl, 1, true);
     this.addNode(quad);
+  }
+
+  setText(text) {
+    this.text = text;
+    this.children = []; //removing previous quads
+    let textTexture = this._createTextTexture(this.title, this.text);
+    let dataUrl = textTexture.image.toDataURL();
+    let quad = new QuadNode(dataUrl, 1, true);
+    this.addNode(quad);
+    
   }
 }
 
