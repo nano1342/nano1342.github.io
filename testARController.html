@@ -145,10 +145,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         gl = createWebGLContext({
           xrCompatible: true
         });
-        // Only append the canvas in inline mode
-        if (!xrImmersiveRefSpace) {
-          document.body.appendChild(gl.canvas);
-        }
+        document.body.appendChild(gl.canvas);
 
         function onResize() {
           gl.canvas.width = gl.canvas.clientWidth * window.devicePixelRatio;
