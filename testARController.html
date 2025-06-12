@@ -328,7 +328,22 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           // Change the box color to something random, so we can see that 'squeeze' was invoked.
           let uniforms = currently_grabbed_box.renderPrimitive.uniforms;
           uniforms.baseColorFactor.value = [Math.random(), Math.random(), Math.random(), 1.0];
-          currently_grabbed_box.position.x += 0.1;
+          
+          let refSpace = ev.frame.session.isImmersive ?
+          xrImmersiveRefSpace :
+          inlineViewerHelper.referenceSpace;
+
+          if (ev.inputSource.gripSpace) {
+            let gripPose = ev.frame.getPose(ev.inputSource.gripSpace, refSpace);
+            if (gripPose) {
+              // Set the box position to the controller's position
+              currently_grabbed_box.position = [
+                gripPose.transform.position.x,
+                gripPose.transform.position.y,
+                gripPose.transform.position.z
+              ];
+            }
+          }
           
         }
       }
