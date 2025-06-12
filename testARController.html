@@ -78,8 +78,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       let boxes = [];
       let currently_selected_boxes = [null, null];
       let currently_grabbed_boxes = [null, null];
-      let centerPos = [0, 0, 0];
-      let centerPosInitialized = false;
 
       //let solarSystem = new Gltf2Node({url: 'media/gltf/space/space.gltf'});
       // The solar system is big (citation needed). Scale it down so that users
@@ -93,9 +91,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       // cube.scale = [0.2, 0.2, 0.2];
       // scene.addNode(cube);
 
-      import CardNode from './js/render/nodes/card.js';
-      console.log(CardNode);
-      const card = new CardNode('text texture', 'attempt 2');
+      import {CardNode} from './js/render/nodes/card.js';
+      const card = new CardNode('text texture', 'Salut comment ça va ceci est un test');
       card.translation = [0, 0.5, -2];
       card.rotation = [0, 0, 0, 0];
       scene.addNode(card);
@@ -234,7 +231,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       function onSelectStart(ev) {
         console.log("selectstart " + currently_selected_boxes);
-        centerPosInitialized = false;
         let refSpace = ev.frame.session.isImmersive ?
                          xrImmersiveRefSpace :
                          inlineViewerHelper.referenceSpace;
@@ -248,7 +244,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           // Check to see if the hit result was one of our boxes.
           for (let box of boxes) {
             if (hitResult.node == box.node) {
-              card.setText('select');
               let i = (ev.inputSource.handedness == "left") ? 0 : 1;
               currently_selected_boxes[i] = box;
               box.scale = [1.25, 1.25, 1.25];
@@ -284,6 +279,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           // it is expected that the scale is 1.25 (see onSelectStart). This should make the scale 0.75
           vec3.add(currently_selected_box.scale, currently_selected_box.scale, [-0.5, -0.5, -0.5]);
           currently_selected_box.selected = true;
+          
         }
       }
 
@@ -302,7 +298,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           // Check to see if the hit result was one of our boxes.
           for (let box of boxes) {
             if (hitResult.node == box.node && !box.grabbed) {
-              card.setText('squeeze');
               let i = (ev.inputSource.handedness == "left") ? 0 : 1;
               currently_grabbed_boxes[i] = box;
               box.scale = [0.1, 0.1, 0.1];
@@ -421,17 +416,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                          inlineViewerHelper.referenceSpace;
         let pose = frame.getViewerPose(refSpace);
 
-        //initializing centerPos
-        if (!centerPosInitialized && pose && pose.transform && pose.transform.position) {
-          console.log("entered");
-          
-          centerPos[0] = pose.transform.position.x;
-          centerPos[1] = pose.transform.position.y;
-          centerPos[2] = pose.transform.position.z;
-          centerPosInitialized = true;
-          console.log('centerPos initialized:', centerPos);
-          card.setText('centerPos: ' + centerPos);
-        }
         scene.startFrame();
 
         session.requestAnimationFrame(onXRFrame);
