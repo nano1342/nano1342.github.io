@@ -41,6 +41,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         </p>
       </details>
     </header>
+
+    <img id="marker_hiro" src="media/markers/marker_hiro.png" style="display: none;">
+
     <script type="module">
       import {WebXRButton} from './js/util/webxr-button.js';
       import {Scene} from './js/render/scenes/scene.js';
@@ -97,12 +100,24 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         // environment will be visible either via video passthrough or a
         // transparent display. This may be presented either in a headset or
         // fullscreen on a mobile device.
-        return navigator.xr.requestSession('immersive-ar')
+        const img = document.getElementById('img');
+        // Ensure the image is loaded and ready for use
+        createImageBitmap(img).then((imgBitmap) => {
+          return navigator.xr.requestSession('immersive-ar', {
+          requiredFeatures: ['image-tracking'],
+          trackedImages: [
+            {
+              image: imgBitmap,
+              widthInMeters: 0.2
+            }
+          ]
+        })
             .then((session) => {
               xrButton.setSession(session);
               session.isImmersive = true;
               onSessionStarted(session);
             });
+        });
       }
 
       function initGL() {
@@ -126,7 +141,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         scene.setRenderer(renderer);
       }
 
-      function onSessionStarted(session) {
+      async function onSessionStarted(session) {
         session.addEventListener('end', onSessionEnded);
 
         if (session.isImmersive) {
@@ -156,6 +171,20 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           }
           session.requestAnimationFrame(onXRFrame);
         });
+
+
+        const scores = await session.getTrackedImageScores();
+        let trackableImages = 0;
+        for (let index = 0; index < scores.length; ++index) {
+          if (scores[index] == 'untrackable') {
+            console.log('image ' + index + ' is untrackable');
+          } else {
+            ++trackableImages;
+          }
+        }
+        if (trackableImages == 0) {
+          console.log("No trackable images");
+        }
       }
 
       function onEndSession(session) {
